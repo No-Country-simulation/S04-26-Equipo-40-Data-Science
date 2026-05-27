@@ -1,0 +1,109 @@
+text,lang,sentiment,role,conv_id,industry,split,intent
+"Já cancelei antes e continuam me cobrando, que absurdo",pt,negative,customer,demo_0059,e-commerce,demo,cancelacion
+Tienen tienda física en Buenos Aires?,es,neutral,customer,demo_0009,e-commerce,demo,consulta_general
+"Necesito cancelar la suscripción, no me interesa seguir",es,negative,customer,demo_0001,e-commerce,demo,cancelacion
+Preciso de ajuda com o cadastro no site,pt,negative,customer,demo_0065,e-commerce,demo,consulta_general
+Onde está meu pedido? O rastreio não atualiza,pt,negative,customer,demo_0102,e-commerce,demo,seguimiento
+En qué fecha me debitan el próximo pago?,es,neutral,customer,demo_0015,e-commerce,demo,facturacion_pago
+Como faço para trocar um produto?,pt,neutral,customer,demo_0062,e-commerce,demo,consulta_general
+Meu cartão foi recusado mas tenho limite disponível,pt,negative,customer,demo_0067,e-commerce,demo,facturacion_pago
+"Mudei de endereço e já fiz o pedido, como altero?",pt,negative,customer,demo_0085,e-commerce,demo,modificacion_pedido
+Cómo elimino mi cuenta definitivamente?,es,neutral,customer,demo_0026,e-commerce,demo,gestion_cuenta
+Quero trocar o tamanho do produto que comprei,pt,neutral,customer,demo_0084,e-commerce,demo,modificacion_pedido
+Conseguem verificar o andamento da minha entrega?,pt,neutral,customer,demo_0107,e-commerce,demo,seguimiento
+"Necesito cambiar la talla de mi pedido, pedí M pero necesito L",es,neutral,customer,demo_0030,e-commerce,demo,modificacion_pedido
+"Cambié de dirección y ya hice el pedido, puedo modificar?",es,negative,customer,demo_0032,e-commerce,demo,modificacion_pedido
+Quando vence a próxima fatura?,pt,neutral,customer,demo_0068,e-commerce,demo,facturacion_pago
+Ya pedí el reembolso hace 10 días y no me han pagado,es,negative,customer,demo_0044,e-commerce,demo,reembolso
+Qual o prazo de entrega para São Paulo?,pt,neutral,customer,demo_0060,e-commerce,demo,consulta_general
+"Consegui atualizar meus dados, obrigado",pt,positive,customer,demo_0082,e-commerce,demo,gestion_cuenta
+Como excluir minha conta permanentemente?,pt,neutral,customer,demo_0080,e-commerce,demo,gestion_cuenta
+Cuándo llega mi pedido? Necesito saber el estado,es,neutral,customer,demo_0050,e-commerce,demo,seguimiento
+"Me devolvieron menos plata de lo que pagué, está mal calculado",es,negative,customer,demo_0047,e-commerce,demo,reembolso
+Tem cupom de desconto para primeira compra?,pt,positive,customer,demo_0063,e-commerce,demo,consulta_general
+"Recebi o reembolso na conta, obrigado pela agilidade",pt,positive,customer,demo_0070,e-commerce,demo,facturacion_pago
+"Quiero que me devuelvan el dinero, el producto no funciona",es,negative,customer,demo_0042,e-commerce,demo,reembolso
+"A entrega foi antes do prazo, muito satisfeito",pt,positive,customer,demo_0074,e-commerce,demo,feedback
+Quero alterar meu endereço de entrega padrão,pt,neutral,customer,demo_0079,e-commerce,demo,gestion_cuenta
+Vocês vendem para todo o Brasil?,pt,neutral,customer,demo_0061,e-commerce,demo,consulta_general
+Cómo puedo cambiar mi dirección de entrega?,es,neutral,customer,demo_0008,e-commerce,demo,consulta_general
+"Pésima atención al cliente, nadie responde los mensajes",es,negative,customer,demo_0021,e-commerce,demo,feedback
+"Llevo una semana esperando y el pedido no llega, pésimo servicio",es,negative,customer,demo_0037,e-commerce,demo,queja
+"Fui cobrado duas vezes na mesma fatura, quero estorno",pt,negative,customer,demo_0066,e-commerce,demo,facturacion_pago
+Se puede modificar el color del producto después de comprar?,es,neutral,customer,demo_0033,e-commerce,demo,modificacion_pedido
+Me pueden dar más información sobre el producto,es,neutral,customer,demo_0010,e-commerce,demo,consulta_general
+Pode cancelar meu pedido #56789? Obrigado,pt,neutral,customer,demo_0056,e-commerce,demo,cancelacion
+Preciso cancelar a assinatura mensal,pt,negative,customer,demo_0055,e-commerce,demo,cancelacion
+Prazo para cair o reembolso no cartão de crédito?,pt,neutral,customer,demo_0100,e-commerce,demo,reembolso
+El tracking muestra entregado pero no recibí nada,es,negative,customer,demo_0052,e-commerce,demo,seguimiento
+Cuál es el horario de atención al cliente?,es,neutral,customer,demo_0006,e-commerce,demo,consulta_general
+Ya van tres reclamos y nadie me da solución,es,negative,customer,demo_0041,e-commerce,demo,queja
+"Cancelamento de conta, por favor",pt,neutral,customer,demo_0058,e-commerce,demo,cancelacion
+Me podrían dar el número de seguimiento de mi envío?,es,neutral,customer,demo_0049,e-commerce,demo,seguimiento
+Rastreio mostra entregue mas não recebi nada,pt,negative,customer,demo_0106,e-commerce,demo,seguimiento
+Esqueci minha senha e não consigo recuperar,pt,negative,customer,demo_0078,e-commerce,demo,gestion_cuenta
+Estou há 15 dias esperando e nada do pedido chegar,pt,negative,customer,demo_0091,e-commerce,demo,queja
+Como solicitar o reembolso de um pedido cancelado?,pt,neutral,customer,demo_0097,e-commerce,demo,reembolso
+"El producto llegó roto y en mal estado, una vergüenza",es,negative,customer,demo_0036,e-commerce,demo,queja
+"El producto está bien por el precio, cumple su función",es,neutral,customer,demo_0023,e-commerce,demo,feedback
+"Me enviaron el producto equivocado, esto es inaceptable",es,negative,customer,demo_0039,e-commerce,demo,queja
+El servicio de mensajería no cumple con los horarios prometidos,es,negative,customer,demo_0040,e-commerce,demo,queja
+"Excelente servicio, muy rápido y eficiente, gracias!",es,positive,customer,demo_0018,e-commerce,demo,feedback
+Preciso mudar o telefone de contato,pt,neutral,customer,demo_0083,e-commerce,demo,gestion_cuenta
+Se puede cancelar el pedido si ya pagué? Necesito ayuda,es,neutral,customer,demo_0005,e-commerce,demo,cancelacion
+Olvidé mi contraseña y no puedo entrar a mi cuenta,es,negative,customer,demo_0024,e-commerce,demo,gestion_cuenta
+Hasta cuándo dura la promo de envío gratis?,es,neutral,customer,demo_0007,e-commerce,demo,consulta_general
+Necesito cambiar la fecha de entrega por favor,es,neutral,customer,demo_0034,e-commerce,demo,modificacion_pedido
+Preciso alterar a cor do produto que pedi,pt,neutral,customer,demo_0087,e-commerce,demo,modificacion_pedido
+"El reembolso se procesó correctamente, gracias por la gestión",es,positive,customer,demo_0046,e-commerce,demo,reembolso
+"Hola, cancele el pedido por favor, ya no quiero el producto",es,negative,customer,demo_0002,e-commerce,demo,cancelacion
+El paquete ya llegó gracias por el seguimiento,es,positive,customer,demo_0051,e-commerce,demo,seguimiento
+Quiero cambiar mi método de pago a débito automático,es,neutral,customer,demo_0016,e-commerce,demo,facturacion_pago
+"La atención al cliente es terrible, nunca resuelven nada",es,negative,customer,demo_0038,e-commerce,demo,queja
+"Podrían mejorar los tiempos de entrega, es muy lento",es,negative,customer,demo_0022,e-commerce,demo,feedback
+"Produto de excelente qualidade, superou minhas expectativas",pt,positive,customer,demo_0073,e-commerce,demo,feedback
+Cuánto tiempo tarda el reembolso en aparecer?,es,neutral,customer,demo_0045,e-commerce,demo,reembolso
+"Me cobraron dos veces el mismo pedido, esto es un robo",es,negative,customer,demo_0012,e-commerce,demo,facturacion_pago
+Dónde está mi pedido? El tracking no se actualiza desde hace 3 días,es,negative,customer,demo_0048,e-commerce,demo,seguimiento
+Já paguei e quero mudar a data de entrega,pt,neutral,customer,demo_0089,e-commerce,demo,modificacion_pedido
+Já pedi reembolso tem 2 semanas e ainda não caiu,pt,negative,customer,demo_0098,e-commerce,demo,reembolso
+"Ótimo atendimento, resolveram meu problema muito rápido",pt,positive,customer,demo_0072,e-commerce,demo,feedback
+"Consegui modificar meu pedido sem problemas, sistema ótimo",pt,positive,customer,demo_0088,e-commerce,demo,modificacion_pedido
+"La calidad del producto superó mis expectativas, muy recomendable",es,positive,customer,demo_0019,e-commerce,demo,feedback
+"Podiam melhorar a embalagem, veio amassado",pt,negative,customer,demo_0076,e-commerce,demo,feedback
+Cómo solicito el reembolso de mi compra?,es,neutral,customer,demo_0043,e-commerce,demo,reembolso
+"Atendimento péssimo, me transferem e não resolvem",pt,negative,customer,demo_0092,e-commerce,demo,queja
+"Me encantó la atención recibida, resolvieron todo en minutos",es,positive,customer,demo_0020,e-commerce,demo,feedback
+"Quiero cancelar mi pedido urgente, ya no lo necesito",es,negative,customer,demo_0000,e-commerce,demo,cancelacion
+Qual o código de rastreio do meu envio?,pt,neutral,customer,demo_0103,e-commerce,demo,seguimiento
+"Mandei o produto errado, quero falar com o gerente",pt,negative,customer,demo_0093,e-commerce,demo,queja
+"Quero cancelar a compra, o produto demora muito",pt,negative,customer,demo_0057,e-commerce,demo,cancelacion
+Devolvi o produto e não me reembolsaram ainda,pt,negative,customer,demo_0101,e-commerce,demo,reembolso
+Pueden verificar el estado de mi envío internacional?,es,neutral,customer,demo_0053,e-commerce,demo,seguimiento
+Terceira vez que reclamo do mesmo problema e nada,pt,negative,customer,demo_0095,e-commerce,demo,queja
+Quiero actualizar mis datos personales en el perfil,es,neutral,customer,demo_0025,e-commerce,demo,gestion_cuenta
+Cobraram juros indevidos na minha fatura,pt,negative,customer,demo_0071,e-commerce,demo,facturacion_pago
+"O produto chegou quebrado, horrível a embalagem",pt,negative,customer,demo_0090,e-commerce,demo,queja
+O site é bonito mas podia ser mais rápido,pt,neutral,customer,demo_0077,e-commerce,demo,feedback
+Quais as formas de pagamento aceitas?,pt,neutral,customer,demo_0064,e-commerce,demo,consulta_general
+"Cambié mi número de teléfono, cómo lo actualizo?",es,neutral,customer,demo_0029,e-commerce,demo,gestion_cuenta
+No me llega el correo de verificación para crear la cuenta,es,negative,customer,demo_0027,e-commerce,demo,gestion_cuenta
+"Quero meu dinheiro de volta, o produto não funciona",pt,negative,customer,demo_0096,e-commerce,demo,reembolso
+"Pacote chegou bem, obrigado pelo acompanhamento",pt,positive,customer,demo_0105,e-commerce,demo,seguimiento
+"Cancelación de cuenta, ya no quiero seguir usando el servicio",es,negative,customer,demo_0004,e-commerce,demo,cancelacion
+"Quero cancelar meu pedido, mudei de ideia",pt,negative,customer,demo_0054,e-commerce,demo,cancelacion
+"Péssimo serviço de pós-venda, ninguém responde",pt,negative,customer,demo_0075,e-commerce,demo,feedback
+El envío incluye tracking o seguro?,es,positive,customer,demo_0011,e-commerce,demo,consulta_general
+"O boleto não foi compensado ainda, pode verificar?",pt,neutral,customer,demo_0069,e-commerce,demo,facturacion_pago
+"O estorno já foi processado, obrigado pela atenção",pt,positive,customer,demo_0099,e-commerce,demo,reembolso
+Pode adicionar mais um item no meu pedido atual?,pt,neutral,customer,demo_0086,e-commerce,demo,modificacion_pedido
+"No puedo procesar el pago con mi tarjeta, me da error",es,negative,customer,demo_0013,e-commerce,demo,facturacion_pago
+Quando vai chegar meu pedido? Preciso saber urgente,pt,negative,customer,demo_0104,e-commerce,demo,seguimiento
+"Gracias, el reembolso ya apareció en mi cuenta",es,positive,customer,demo_0017,e-commerce,demo,facturacion_pago
+"Ya pude acceder a mi cuenta, gracias por la ayuda",es,positive,customer,demo_0028,e-commerce,demo,gestion_cuenta
+Quiero agregar otro producto a mi pedido actual,es,neutral,customer,demo_0031,e-commerce,demo,modificacion_pedido
+"Pude modificar mi pedido sin problemas, excelente sistema",es,positive,customer,demo_0035,e-commerce,demo,modificacion_pedido
+"A transportadora atrasou e não avisou, inadmissível",pt,negative,customer,demo_0094,e-commerce,demo,queja
+"Quisiera cancelar mi orden #12345, me arrepentí de la compra",es,negative,customer,demo_0003,e-commerce,demo,cancelacion
+"El descuento no se aplicó en mi compra, quiero que me devuelvan la diferencia",es,negative,customer,demo_0014,e-commerce,demo,facturacion_pago
+Não recebo o e-mail de confirmação do cadastro,pt,negative,customer,demo_0081,e-commerce,demo,gestion_cuenta

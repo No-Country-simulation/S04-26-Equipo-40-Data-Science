@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 *.egg-info/
 dist/
 build/
@@ -18,10 +19,9 @@ build/
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
 
 # Modelos y datos grandes
-models/
+/models/
 checkpoints/
 *.pth
 *.bin
@@ -36,3 +36,16 @@ Thumbs.db
 # Archivos temporales
 *.tmp
 *.log
+
+# ── Proyecto ConversaAI ──
+
+# Models locales (pesados, están en HF Hub)
+proyecto/src/models/sentiment/
+proyecto/src/models/intent/
+
+# Datos raw y outputs
+proyecto/data/raw/
+proyecto/outputs/
+
+# Scripts archivados
+proyecto/scripts/archive/

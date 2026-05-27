@@ -1,0 +1,65 @@
+schema: spec-driven
+
+context: |
+  Project: ConversaAI — sistema de análisis de conversaciones de soporte al cliente (ES/PT, ~2M mensajes/mes)
+  Goal: Fine-tune XLM-R para sentimiento (3 clases) + intención (9 clases) + churn heurístico → generar recomendaciones de negocio para mejorar retención y calidad de servicio
+
+  Business Objectives:
+  1. Detectar clientes frustrados ANTES de que escalen (churn prediction)
+  2. Identificar intenciones no resueltas recurrentes (qué problemas quedan sin resolver)
+  3. Priorizar áreas de mejora: facturación, soporte técnico, cancelaciones, etc.
+  4. Generar recomendaciones accionables: ej. "automatizar respuestas de facturación", "asignar agentes senior a clientes con alta frustración"
+  5. Medir impacto de cambios: ¿mejoró el sentimiento después de implementar X?
+
+  Output esperado:
+  - Dashboard con métricas por conversación (sentimiento, intención, churn, frustración)
+  - Sección de recomendaciones priorizadas (CRÍTICA / ALTA / MEDIA)
+  - Exportable a CSV para compartir con equipo de producto
+
+  Tech stack: Python 3.11, Hugging Face Transformers, PyTorch, scikit-learn, Streamlit, pandas/matplotlib/seaborn, Kaggle T4x2
+  Architecture: XLM-R Sentiment (3 clases) + XLM-R Intent (9 clases) + ChurnScorer heurístico → Streamlit Dashboard
+  Testing: No formal test infrastructure, inline asserts in scripts
+  Style: No linter/formatter configured
+  GPU: Kaggle T4x2 para training, CPU local para inferencia
+
+strict_tdd: false
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules/packages
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing code patterns and conventions
+    - Load relevant coding skills for the project stack
+  verify:
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)
+
+testing:
+  strict_tdd: false
+  detected: '2026-05-25'
+  test_runner:
+    command: NONE
+    framework: NONE
+  layers:
+    unit: { available: false, tool: '—' }
+    integration: { available: false, tool: '—' }
+    e2e: { available: false, tool: '—' }
+  coverage:
+    available: false
+    command: '—'
+  quality_tools:
+    linter: { available: false, command: '—' }
+    type_checker: { available: false, command: '—' }
+    formatter: { available: false, command: '—' }
