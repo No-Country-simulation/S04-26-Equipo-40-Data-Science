@@ -129,7 +129,7 @@ Actualmente el pipeline se ejecuta desde código (Python/notebooks) y los result
 El equipo creó un dashboard alternativo en la rama [`dashboard`](https://github.com/No-Country-simulation/S04-26-Equipo-40-Data-Science/tree/dashboard):
 
 - `app.py` — Dashboard Streamlit con clasificación de intenciones y sentimiento
-- `docs/` — Dashboard web con HTML/CSS/JS (charts interactivos)
+- `dashboard-web/` — Dashboard web con HTML/CSS/JS (charts interactivos)
 - `tests/` — Tests unitarios con pytest
 
 Para verlo:
