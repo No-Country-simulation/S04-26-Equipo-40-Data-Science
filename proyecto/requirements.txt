@@ -20,6 +20,10 @@ plotly>=5.15.0
 # Utilities
 tqdm>=4.65.0
 huggingface-hub>=0.17.0
+openpyxl>=3.1.0
+
+# NLP (equipo)
+spacy>=3.7.0
 
 # Visualization (para notebooks)
 matplotlib>=3.7.0
