@@ -219,6 +219,35 @@
     /* ----------------------------------------------------------------
        Export recommendations as CSV
        ---------------------------------------------------------------- */
+    function _exportAllDataJson(ds) {
+        const snapshot = {
+            exportedAt:  new Date().toISOString(),
+            langFilter:  ds.getLang(),
+            sentiment:   ds.getSentimentDist(),
+            intents:     ds.getIntentDist(),
+            timeline:    ds.getTimeline(),
+            frustration: {
+                timeline: ds.getFrustrationTimeline(),
+                byIntent: ds.getFrustrationByIntent()
+            },
+            churn:       ds.getChurnDist(),
+            recommendations: ds.getRecommendations(),
+            models: {
+                all:    ds.getModels(),
+                active: ds.getFilteredModels()
+            }
+        };
+
+        const json  = JSON.stringify(snapshot, null, 2);
+        const blob  = new Blob([json], { type: 'application/json;charset=utf-8;' });
+        const url   = URL.createObjectURL(blob);
+        const a     = document.createElement('a');
+        a.href = url;
+        a.download = `conversaai_reporte_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
     function _exportRecsCsv(recs) {
         const header = 'Prioridad,Título,Acción';
         const rows = recs.map(r =>
@@ -247,7 +276,8 @@
             const exportRecsBtn = $('exportRecsBtn');
 
             if (exportBtn) exportBtn.addEventListener('click', () => {
-                _showToast('📊 Reporte exportado correctamente.');
+                _exportAllDataJson(dataService);
+                _showToast('📊 Reporte JSON descargado con todos los datos del dashboard.');
             });
             if (exportRecsBtn) exportRecsBtn.addEventListener('click', () => {
                 _exportRecsCsv(dataService.getRecommendations());
