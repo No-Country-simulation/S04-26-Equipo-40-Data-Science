@@ -1,0 +1,50 @@
+/* ================================================================
+   charts.css — ConversaAI Dashboard
+   Chart container wrappers and Chart.js overrides.
+   SRP: Chart layout concerns only.
+   ================================================================ */
+
+/* Base chart wrapper */
+.chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}
+
+/* Tall wrapper — for timeline/area charts */
+.chart-wrap--tall {
+    height: 340px;
+}
+
+/* Square wrapper — for radar/doughnut */
+.chart-wrap--sq {
+    height: 320px;
+}
+
+/* Canvas fills container */
+.chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Chart.js tooltip global override (applied via Chart.defaults in JS) */
+/* Note: most tooltip styling is done in JS via Chart.defaults */
+
+/* Loading skeleton shimmer (shown while charts init) */
+.chart-skeleton {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r-md);
+    background: linear-gradient(
+        90deg,
+        var(--bg-input) 25%,
+        var(--border-subtle) 50%,
+        var(--bg-input) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position:  200% 0; }
+}

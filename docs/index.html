@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ConversaAI Dashboard — Análisis profesional de modelos NLP de sentimiento e intención en Español y Portugués">
+    <title>ConversaAI — Dashboard de Análisis NLP</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Dashboard Styles (SRP: each file = one concern) -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/charts.css">
+</head>
+<body>
+    <!-- Mobile sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+    <div class="dashboard-shell">
+
+        <!-- ============================================================
+             SIDEBAR — Navigation (Single Responsibility: nav only)
+             ============================================================ -->
+        <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navegación principal">
+
+            <div class="sidebar__header">
+                <div class="sidebar__logo">
+                    <div class="sidebar__logo-icon">
+                        <i class="fa-solid fa-robot" aria-hidden="true"></i>
+                    </div>
+                    <div class="sidebar__logo-text">
+                        <span class="sidebar__brand">ConversaAI</span>
+                        <span class="sidebar__version">NLP Pipeline v2.0</span>
+                    </div>
+                </div>
+                <button class="sidebar__close" id="sidebarCloseBtn" aria-label="Cerrar menú lateral">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar__nav">
+                <span class="sidebar__nav-label">Análisis</span>
+                <ul role="list">
+                    <li>
+                        <a href="#" class="sidebar__link active" id="nav-overview" data-tab="overview" aria-current="page">
+                            <i class="fa-solid fa-chart-pie" aria-hidden="true"></i>
+                            <span>Resumen General</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar__link" id="nav-models" data-tab="models">
+                            <i class="fa-solid fa-brain" aria-hidden="true"></i>
+                            <span>Comparativa de Modelos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar__link" id="nav-frustration" data-tab="frustration">
+                            <i class="fa-solid fa-face-angry" aria-hidden="true"></i>
+                            <span>Análisis de Frustración</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="sidebar__link" id="nav-recommendations" data-tab="recommendations">
+                            <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
+                            <span>Recomendaciones</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <span class="sidebar__nav-label">Configuración</span>
+                <ul role="list">
+                    <li>
+                        <a href="#" class="sidebar__link" id="themeToggleNav">
+                            <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+                            <span>Cambiar Tema</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar__footer">
+                <div class="sidebar__user">
+                    <div class="sidebar__avatar">
+                        <i class="fa-solid fa-user-astronaut"></i>
+                    </div>
+                    <div>
+                        <p class="sidebar__user-name">Admin</p>
+                        <p class="sidebar__user-role">Data Scientist</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ============================================================
+             MAIN CONTENT
+             ============================================================ -->
+        <main class="main" id="mainContent">
+
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar__left">
+                    <button class="topbar__hamburger" id="hamburgerBtn" aria-label="Abrir menú">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <nav class="breadcrumb" aria-label="Breadcrumb">
+                        <span class="breadcrumb__app">ConversaAI</span>
+                        <i class="fa-solid fa-chevron-right breadcrumb__sep" aria-hidden="true"></i>
+                        <span class="breadcrumb__page" id="breadcrumbPage">Resumen General</span>
+                    </nav>
+                </div>
+
+                <div class="topbar__right">
+                    <div class="topbar__filter">
+                        <i class="fa-solid fa-filter topbar__filter-icon" aria-hidden="true"></i>
+                        <select class="filter-select" id="langFilter" aria-label="Filtrar por idioma">
+                            <option value="all">Todos los idiomas</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="pt">🇧🇷 Portugués</option>
+                        </select>
+                    </div>
+                    <button class="btn btn--primary" id="exportBtn">
+                        <i class="fa-solid fa-download" aria-hidden="true"></i>
+                        <span>Exportar</span>
+                    </button>
+                    <button class="theme-toggle" id="themeToggleBtn" aria-label="Cambiar tema">
+                        <i class="fa-solid fa-sun" id="themeIcon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Hero -->
+            <section class="page-hero">
+                <div class="page-hero__content">
+                    <h1 class="page-hero__title" id="pageTitle">Análisis de Modelos NLP</h1>
+                    <p class="page-hero__sub">Pipeline de sentimiento, intención y predicción de churn — Español &amp; Portugués</p>
+                </div>
+                <div class="page-hero__badges">
+                    <span class="hero-badge hero-badge--green">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i> 24 Tests ✅
+                    </span>
+                    <span class="hero-badge hero-badge--blue">
+                        <i class="fa-solid fa-database" aria-hidden="true"></i> 271K Reviews
+                    </span>
+                    <span class="hero-badge hero-badge--violet">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i> 4 Modelos
+                    </span>
+                    <span class="hero-badge hero-badge--orange">
+                        <i class="fa-solid fa-bolt" aria-hidden="true"></i> &gt;95% Precisión
+                    </span>
+                </div>
+            </section>
+
+            <!-- Tab Panels Container -->
+            <div class="tabs-content">
+
+                <!-- ===================================================
+                     TAB 1: RESUMEN GENERAL
+                     =================================================== -->
+                <section class="tab-panel active" id="tab-overview" role="tabpanel" aria-labelledby="nav-overview">
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid" id="kpiGrid">
+                        <article class="kpi-card kpi-card--indigo" id="kpi-accuracy">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Mejor Precisión</p>
+                                <p class="kpi-card__value" id="kpi-val-accuracy">97.2%</p>
+                                <p class="kpi-card__delta kpi-card__delta--up">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> XLM-R Fine-tuned
+                                </p>
+                            </div>
+                        </article>
+
+                        <article class="kpi-card kpi-card--emerald" id="kpi-reviews">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-database"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Reviews de Entrenamiento</p>
+                                <p class="kpi-card__value" id="kpi-val-reviews">271K</p>
+                                <p class="kpi-card__delta">
+                                    <i class="fa-solid fa-globe"></i> ES + PT combinados
+                                </p>
+                            </div>
+                        </article>
+
+                        <article class="kpi-card kpi-card--orange" id="kpi-frustration">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-face-angry"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Detección Frustración</p>
+                                <p class="kpi-card__value" id="kpi-val-frustration">23%</p>
+                                <p class="kpi-card__delta kpi-card__delta--warn">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Datasets reales
+                                </p>
+                            </div>
+                        </article>
+
+                        <article class="kpi-card kpi-card--violet" id="kpi-latency">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-stopwatch"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Latencia BERT Promedio</p>
+                                <p class="kpi-card__value" id="kpi-val-latency">152ms</p>
+                                <p class="kpi-card__delta kpi-card__delta--down">
+                                    <i class="fa-solid fa-bolt"></i> 15× más lento que TF-IDF
+                                </p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- Row 1 Charts -->
+                    <div class="chart-row chart-row--two">
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-chart-pie card__title-icon icon--indigo"></i>
+                                    Distribución de Sentimiento
+                                </h2>
+                                <span class="badge badge--blue" id="sentimentLangBadge">Todos</span>
+                            </div>
+                            <div class="chart-wrap chart-wrap--sq">
+                                <canvas id="sentimentChart" aria-label="Distribución de sentimiento"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-tags card__title-icon icon--emerald"></i>
+                                    Distribución de Intenciones
+                                </h2>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="intentChart" aria-label="Distribución de intenciones"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Timeline -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <i class="fa-solid fa-chart-line card__title-icon icon--cyan"></i>
+                                Volumen de Mensajes por Día (últimos 30 días)
+                            </h2>
+                        </div>
+                        <div class="chart-wrap chart-wrap--tall">
+                            <canvas id="timelineChart" aria-label="Volumen de mensajes por día"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===================================================
+                     TAB 2: COMPARATIVA DE MODELOS
+                     =================================================== -->
+                <section class="tab-panel" id="tab-models" role="tabpanel" aria-labelledby="nav-models">
+
+                    <!-- Models table -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <i class="fa-solid fa-table card__title-icon icon--indigo"></i>
+                                Modelos Implementados
+                            </h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" id="modelsTable">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Modelo</th>
+                                        <th scope="col">Arquitectura</th>
+                                        <th scope="col">Idioma</th>
+                                        <th scope="col">Precisión</th>
+                                        <th scope="col">Recall</th>
+                                        <th scope="col">F1-Score</th>
+                                        <th scope="col">Latencia</th>
+                                        <th scope="col">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modelsTableBody">
+                                    <!-- Populated by UIController -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Accuracy + Latency -->
+                    <div class="chart-row chart-row--two">
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-bullseye card__title-icon icon--emerald"></i>
+                                    Precisión por Modelo (%)
+                                </h2>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="accuracyChart" aria-label="Precisión por modelo"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-stopwatch card__title-icon icon--orange"></i>
+                                    Latencia por Review (ms)
+                                </h2>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="latencyChart" aria-label="Latencia por modelo"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radar + F1 -->
+                    <div class="chart-row chart-row--two">
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-circle-nodes card__title-icon icon--violet"></i>
+                                    Comparativa Multidimensional
+                                </h2>
+                            </div>
+                            <div class="chart-wrap chart-wrap--sq">
+                                <canvas id="radarChart" aria-label="Radar comparativa de modelos"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-chart-bar card__title-icon icon--cyan"></i>
+                                    F1-Score por Clase de Sentimiento
+                                </h2>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="f1Chart" aria-label="F1 por clase"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===================================================
+                     TAB 3: ANÁLISIS DE FRUSTRACIÓN
+                     =================================================== -->
+                <section class="tab-panel" id="tab-frustration" role="tabpanel" aria-labelledby="nav-frustration">
+
+                    <!-- Churn KPIs -->
+                    <div class="kpi-grid kpi-grid--three">
+                        <article class="kpi-card kpi-card--rose">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Riesgo CRÍTICO</p>
+                                <p class="kpi-card__value">8%</p>
+                                <p class="kpi-card__delta kpi-card__delta--up">Acción inmediata</p>
+                            </div>
+                        </article>
+                        <article class="kpi-card kpi-card--orange">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-fire"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Riesgo ALTO</p>
+                                <p class="kpi-card__value">17%</p>
+                                <p class="kpi-card__delta kpi-card__delta--warn">Asignar senior</p>
+                            </div>
+                        </article>
+                        <article class="kpi-card kpi-card--emerald">
+                            <div class="kpi-card__icon">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <div class="kpi-card__body">
+                                <p class="kpi-card__label">Riesgo BAJO</p>
+                                <p class="kpi-card__value">58%</p>
+                                <p class="kpi-card__delta kpi-card__delta--up">Monitorear</p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="chart-row chart-row--two">
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-person-running card__title-icon icon--rose"></i>
+                                    Distribución de Riesgo Churn
+                                </h2>
+                            </div>
+                            <div class="chart-wrap chart-wrap--sq">
+                                <canvas id="churnChart" aria-label="Distribución de riesgo de churn"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card__header">
+                                <h2 class="card__title">
+                                    <i class="fa-solid fa-chart-bar card__title-icon icon--orange"></i>
+                                    Frustración Promedio por Intención
+                                </h2>
+                            </div>
+                            <div class="chart-wrap">
+                                <canvas id="frustIntentChart" aria-label="Frustración por intención"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <i class="fa-solid fa-chart-area card__title-icon icon--violet"></i>
+                                Evolución de Frustración Promedio (últimos 30 días)
+                            </h2>
+                        </div>
+                        <div class="chart-wrap chart-wrap--tall">
+                            <canvas id="frustTimelineChart" aria-label="Evolución de frustración"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===================================================
+                     TAB 4: RECOMENDACIONES
+                     =================================================== -->
+                <section class="tab-panel" id="tab-recommendations" role="tabpanel" aria-labelledby="nav-recommendations">
+                    <div class="rec-header">
+                        <p class="rec-desc">
+                            Acciones priorizadas basadas en análisis de conversaciones no resueltas,
+                            niveles de frustración y predicción de churn de los modelos NLP.
+                        </p>
+                        <button class="btn btn--secondary" id="exportRecsBtn">
+                            <i class="fa-solid fa-file-csv" aria-hidden="true"></i>
+                            Descargar CSV
+                        </button>
+                    </div>
+
+                    <!-- Rec cards populated by UIController -->
+                    <div class="rec-list" id="recList" role="list"></div>
+
+                    <!-- Model config cards -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">
+                                <i class="fa-solid fa-gear card__title-icon icon--indigo"></i>
+                                Configuración Técnica de Modelos
+                            </h2>
+                        </div>
+                        <div class="config-grid" id="configGrid">
+                            <!-- Populated by UIController -->
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /.tabs-content -->
+
+        </main>
+    </div><!-- /.dashboard-shell -->
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast" role="alert" aria-live="polite" aria-atomic="true" hidden>
+        <i class="fa-solid fa-circle-check toast__icon" aria-hidden="true"></i>
+        <span class="toast__msg" id="toastMessage">Acción completada</span>
+    </div>
+
+    <!-- Chart.js CDN (loaded before JS modules) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!--
+        JS Load Order (Dependency Inversion: high-level loads last)
+        1. Core (no dependencies)
+        2. Filters (depends on DataService)
+        3. Charts (depend on Chart.js + DataService)
+        4. UI modules (depend on Charts + DataService)
+        5. App (Facade: depends on all above)
+    -->
+    <script src="assets/js/core/EventBus.js"></script>
+    <script src="assets/js/core/ModelRegistry.js"></script>
+    <script src="assets/js/core/DataService.js"></script>
+    <script src="assets/js/filters/FilterStrategy.js"></script>
+    <script src="assets/js/charts/BarChart.js"></script>
+    <script src="assets/js/charts/LineChart.js"></script>
+    <script src="assets/js/charts/RadarChart.js"></script>
+    <script src="assets/js/charts/DoughnutChart.js"></script>
+    <script src="assets/js/charts/ChartFactory.js"></script>
+    <script src="assets/js/ui/ThemeManager.js"></script>
+    <script src="assets/js/ui/TabManager.js"></script>
+    <script src="assets/js/ui/UIController.js"></script>
+    <script src="assets/js/app.js"></script>
+
+</body>
+</html>
