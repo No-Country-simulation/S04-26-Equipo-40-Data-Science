@@ -10,6 +10,7 @@ Pipeline de NLP para clasificar sentimiento (3 clases), intención (9 clases) y 
 | Modelo Sentimiento (HF Hub) | [Rosela/xlm-r-sentiment-espt](https://huggingface.co/Rosela/xlm-r-sentiment-espt) |
 | Modelo Intención (HF Hub) | [Rosela/xlm-r-intent-espt](https://huggingface.co/Rosela/xlm-r-intent-espt) |
 | Perfil HF Hub | [huggingface.co/Rosela](https://huggingface.co/Rosela) |
+| Dashboard Web (Vercel) | [s04-26-equipo-40-data-science.vercel.app](https://s04-26-equipo-40-data-science.vercel.app) |
 
 ## Arquitectura
 
