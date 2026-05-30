@@ -21,7 +21,6 @@ build/
 .ipynb_checkpoints/
 
 # Modelos y datos grandes
-/models/
 checkpoints/
 *.pth
 *.bin
@@ -39,7 +38,8 @@ Thumbs.db
 
 # ── Proyecto ConversaAI ──
 
-# Models locales (pesados, están en HF Hub)
+# Models locales (pesados ~2.2GB, descargar de Drive)
+/models/
 proyecto/src/models/sentiment/
 proyecto/src/models/intent/
 

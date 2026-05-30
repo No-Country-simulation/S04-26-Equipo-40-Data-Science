@@ -10,6 +10,7 @@ Pipeline de NLP para clasificar sentimiento (3 clases), intención (9 clases) y 
 | Modelo Sentimiento (HF Hub) | [Rosela/xlm-r-sentiment-espt](https://huggingface.co/Rosela/xlm-r-sentiment-espt) |
 | Modelo Intención (HF Hub) | [Rosela/xlm-r-intent-espt](https://huggingface.co/Rosela/xlm-r-intent-espt) |
 | Perfil HF Hub | [huggingface.co/Rosela](https://huggingface.co/Rosela) |
+| Dashboard Streamlit (HF Space) | [rosela-conversaai-dashboard.hf.space](https://rosela-conversaai-dashboard.hf.space) |
 | Dashboard Web (Vercel) | [s04-26-equipo-40-data-science.vercel.app](https://s04-26-equipo-40-data-science.vercel.app) |
 
 ## Arquitectura
@@ -41,7 +42,7 @@ Si los modelos fine-tuneados no están disponibles (sin GPU/local), el pipeline 
 | Modelos | XLM-R (`xlm-roberta-base`) fine-tuneado ES/PT |
 | Entrenamiento | Kaggle (GPU T4x2) + Hugging Face Hub |
 | Dashboard | Streamlit + Plotly |
-| Infraestructura | Docker (Python 3.11-slim, CPU) |
+| Infraestructura | HuggingFace Spaces + Docker (Python 3.11-slim, CPU) |
 | Lenguaje | Python 3.11 |
 
 ## Herramientas y Tecnologías
@@ -123,20 +124,20 @@ Si los modelos fine-tuneados no están disponibles (sin GPU/local), el pipeline 
 
 ## Dashboards
 
-### Dashboard principal (rama `dashboard`)
+### Dashboard Streamlit (HuggingFace Space)
 
-El equipo creó un dashboard alternativo en la rama [`dashboard`](https://github.com/No-Country-simulation/S04-26-Equipo-40-Data-Science/tree/dashboard):
+El dashboard Streamlit está deployado en HuggingFace Spaces:
+👉 [rosela-conversaai-dashboard.hf.space](https://rosela-conversaai-dashboard.hf.space)
 
 - `app.py` — Dashboard Streamlit con clasificación de intenciones y sentimiento
-- `dashboard-web/` — Dashboard web con HTML/CSS/JS (charts interactivos)
-- `tests/` — Tests unitarios con pytest
+- Modelos cargados desde HF Hub: `Rosela/xlm-r-intent-espt` (9 clases) + `Rosela/xlm-r-sentiment-espt`
+- Labels mapeadas: las 9 clases en español (`cancelacion`, `queja`, etc.) se traducen a inglés para el dashboard
+- Sube un CSV/Excel con columna `text` y analizá sentimiento, intención y riesgo de churn
 
-Para verlo:
+### Dashboard Web (Vercel)
 
-```bash
-git checkout dashboard
-streamlit run app.py
-```
+Dashboard web estático (HTML/CSS/JS) deployado en Vercel:
+👉 [s04-26-equipo-40-data-science.vercel.app](https://s04-26-equipo-40-data-science.vercel.app)
 
 ## Docker
 
@@ -147,8 +148,8 @@ docker run -p 8501:8501 conversaai
 
 Los modelos fine-tuneados se descargan de HF Hub al arrancar (~556MB c/u).
 
-> ⚠️ El Dockerfile actual apunta a `dashboard_app.py` que fue eliminado de `main`.
-> Si querés usar Docker, actualizá el `CMD` en el Dockerfile o usá la rama `dashboard`.
+> El dashboard Streamlit está deployado en HuggingFace Spaces.
+> Para correrlo localmente: `streamlit run app.py`
 
 ## Dataset demo
 

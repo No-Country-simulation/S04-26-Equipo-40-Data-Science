@@ -9,16 +9,29 @@ from transformers import pipeline
 # ==========================================
 st.set_page_config(page_title="ConversaAI Analytics", page_icon="🤖", layout="wide")
 
-# MAPA ACTUALIZADO CON NUEVAS INTENCIONES
+# MAPA DE MACRO-INTENCIONES (grupos de negocio)
 MACRO_INTENT_MAP = {
-    'cancel_order': 'Gestión de Pedidos', 'change_shipping_address': 'Gestión de Pedidos',
-    'delivery_options': 'Gestión de Pedidos', 'modify_order': 'Gestión de Pedidos',
-    'track_refund': 'Pagos y Reembolsos', 'get_refund': 'Pagos y Reembolsos', 'payment_issue': 'Pagos y Reembolsos',
-    'check_invoice': 'Pagos y Reembolsos', 
-    'recover_password': 'Gestión de Cuenta', 'switch_account': 'Gestión de Cuenta', 
-    'create_account': 'Gestión de Cuenta', 'delete_account': 'Gestión de Cuenta',
-    'contact_customer_service': 'Atención al Cliente', 
-    'complaint': 'Quejas y Reclamos'
+    'cancel_order': 'Gestión de Pedidos', 'modify_order': 'Gestión de Pedidos',
+    'track_order': 'Gestión de Pedidos',
+    'get_refund': 'Pagos y Reembolsos', 'payment_issue': 'Pagos y Reembolsos',
+    'edit_account': 'Gestión de Cuenta', 'delete_account': 'Gestión de Cuenta',
+    'contact_customer_service': 'Atención al Cliente',
+    'complaint': 'Quejas y Reclamos',
+    'review': 'Feedback',
+}
+
+# MAPA DE LABELS: 9 clases español → inglés que espera el dashboard
+# El modelo Rosela/xlm-r-intent-espt predice estas 9 clases en español
+INTENT_LABEL_MAP = {
+    'cancelacion': 'cancel_order',
+    'consulta_general': 'contact_customer_service',
+    'facturacion_pago': 'payment_issue',
+    'feedback': 'review',
+    'gestion_cuenta': 'edit_account',
+    'modificacion_pedido': 'modify_order',
+    'queja': 'complaint',
+    'reembolso': 'get_refund',
+    'seguimiento': 'track_order',
 }
 
 if 'df_processed' not in st.session_state:
@@ -29,8 +42,8 @@ if 'df_processed' not in st.session_state:
 # ==========================================
 @st.cache_resource 
 def load_ai_models():
-    intent_pipe = pipeline("text-classification", model="./models/xlmr-intent", tokenizer="./models/xlmr-intent")
-    sentiment_pipe = pipeline("text-classification", model="./models/xlmr-sentiment", tokenizer="./models/xlmr-sentiment")
+    intent_pipe = pipeline("text-classification", model="Rosela/xlm-r-intent-espt")
+    sentiment_pipe = pipeline("text-classification", model="Rosela/xlm-r-sentiment-espt")
     return intent_pipe, sentiment_pipe
 
 try:
@@ -94,7 +107,7 @@ with tab1:
                     res_intent.append(intent_clf(frase)[0])
                     res_sentiment.append(sentiment_clf(frase)[0])
                 
-                df['Micro-Intención'] = [res['label'] for res in res_intent]
+                df['Micro-Intención'] = [INTENT_LABEL_MAP.get(res['label'], 'consulta_general') for res in res_intent]
                 df['Sentimiento'] = [res['label'].capitalize() for res in res_sentiment]
                 
                 # ========================================================

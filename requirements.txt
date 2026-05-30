@@ -1,0 +1,6 @@
+streamlit>=1.28
+pandas>=2.0
+plotly>=5.18
+numpy>=1.24
+transformers>=5.0
+torch>=2.0
