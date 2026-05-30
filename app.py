@@ -2,12 +2,16 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
+import os
 from transformers import pipeline
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA
 # ==========================================
 st.set_page_config(page_title="ConversaAI Analytics", page_icon="🤖", layout="wide")
+
+# Ruta al dataset de demostración
+SAMPLE_CSV = os.path.join(os.path.dirname(os.path.abspath(__file__)), "proyecto", "data", "corpus_demo_bilingue.csv")
 
 # MAPA DE MACRO-INTENCIONES (grupos de negocio)
 MACRO_INTENT_MAP = {
@@ -34,6 +38,12 @@ INTENT_LABEL_MAP = {
     'seguimiento': 'track_order',
 }
 
+@st.cache_data
+def load_sample_corpus():
+    if os.path.exists(SAMPLE_CSV):
+        return pd.read_csv(SAMPLE_CSV, encoding='utf-8-sig')
+    return None
+
 if 'df_processed' not in st.session_state:
     st.session_state.df_processed = None
 
@@ -59,260 +69,226 @@ st.title("🤖 ConversaAI: Sistema Integral de Análisis")
 tab1, tab2, tab3 = st.tabs(["📊 Dashboard de Análisis", "📈 Métricas del Modelo", "💡 Panel de Prioridades"])
 
 # ==========================================
+# FUNCIÓN DE PROCESAMIENTO
+# ==========================================
+def procesar_dataframe(df, uploaded_file=None):
+    df = df.dropna(subset=['text']).copy()
+
+    def reparar_texto(texto):
+        try:
+            return texto.encode('latin1').decode('utf-8')
+        except:
+            try:
+                return texto.encode('cp1252').decode('utf-8', errors='ignore')
+            except:
+                return texto
+
+    if uploaded_file is not None and uploaded_file.name.endswith('.csv'):
+        df['text'] = df['text'].astype(str).apply(reparar_texto)
+    else:
+        df['text'] = df['text'].astype(str)
+
+    df['text'] = df['text'].str.strip()
+    df = df[df['text'].str.len() > 0].copy()
+
+    textos = df['text'].tolist()
+    res_intent = [intent_clf(f)[0] for f in textos]
+    res_sentiment = [sentiment_clf(f)[0] for f in textos]
+
+    df['Micro-Intención'] = [INTENT_LABEL_MAP.get(r['label'], 'consulta_general') for r in res_intent]
+    df['Sentimiento'] = [r['label'].capitalize() for r in res_sentiment]
+
+    nuevas_intenciones = []
+    nuevos_sentimientos = []
+
+    for _, row in df.iterrows():
+        texto_min = str(row['text']).lower()
+        intencion = row['Micro-Intención']
+        sentimiento = row['Sentimiento']
+
+        es_modificacion = False
+        if ('cambi' in texto_min or 'modific' in texto_min) and ('talla' in texto_min or 'color' in texto_min or 'pedido' in texto_min):
+            es_modificacion = True
+        elif 'pedí' in texto_min and 'necesito' in texto_min:
+            es_modificacion = True
+
+        palabras_abandono = [
+            'excluir', 'apagar minha conta', 'cancelar conta',
+            'borrar mi cuenta', 'cancelar mi cuenta', 'eliminar',
+            'elimino mi cuenta', 'cerrar mi cuenta', 'dar de baja', 'borrar cuenta'
+        ]
+        es_abandono = any(p in texto_min for p in palabras_abandono) and 'cuenta' in texto_min
+
+        if es_abandono:
+            intencion = 'delete_account'
+        elif es_modificacion:
+            intencion = 'modify_order'
+            if sentimiento == 'Negative':
+                sentimiento = 'Neutral'
+
+        nuevas_intenciones.append(intencion)
+        nuevos_sentimientos.append(sentimiento)
+
+    df['Micro-Intención'] = nuevas_intenciones
+    df['Sentimiento'] = nuevos_sentimientos
+    df['Macro-Intención'] = df['Micro-Intención'].map(lambda x: MACRO_INTENT_MAP.get(x, 'Otras Consultas'))
+
+    INTENCIONES_CRITICAS = ['cancel_order', 'complaint', 'get_refund', 'payment_issue', 'delete_account']
+
+    def calcular_riesgo_churn(row):
+        if row['Micro-Intención'] == 'delete_account':
+            return 'Alto Riesgo'
+        elif row['Sentimiento'] == 'Negative' and row['Micro-Intención'] in INTENCIONES_CRITICAS:
+            return 'Alto Riesgo'
+        elif row['Sentimiento'] == 'Negative' or row['Micro-Intención'] == 'contact_customer_service':
+            return 'Riesgo Medio'
+        return 'Riesgo Bajo'
+
+    df['Riesgo de Churn'] = df.apply(calcular_riesgo_churn, axis=1)
+    df['Churn_Num'] = df['Riesgo de Churn'].map({'Alto Riesgo': 0.90, 'Riesgo Medio': 0.45, 'Riesgo Bajo': 0.10})
+    return df
+
+
+def mostrar_dashboard(df):
+    c1, c2, c3 = st.columns(3)
+    total = len(df)
+    frustrados = len(df[df['Sentimiento'] == 'Negative'])
+    c1.metric("Total de Mensajes", total)
+    c2.metric("Usuarios Frustrados", frustrados)
+    c3.metric("Tasa de Frustración", f"{(frustrados/total)*100:.1f}%" if total else "0%")
+
+    st.markdown("---")
+    st.markdown("### 📊 Distribución General")
+    col_g1, col_g2 = st.columns(2)
+
+    with col_g1:
+        fig = px.pie(df, names='Sentimiento', color='Sentimiento',
+                     color_discrete_map={'Positive':'#2ecc71', 'Neutral':'#95a5a6', 'Negative':'#e74c3c'},
+                     title="1. Sentimientos de los Usuarios")
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_g2:
+        dm = df['Macro-Intención'].value_counts().reset_index()
+        dm.columns = ['Macro-Intención', 'Cantidad']
+        fig = px.bar(dm, x='Cantidad', y='Macro-Intención', orientation='h',
+                     title="2. Volumen por Macro-Intención", text_auto=True,
+                     color_discrete_sequence=['#3498db'])
+        fig.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Volumen", yaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("### 🎯 Análisis Detallado de Flujos")
+    col_g3, col_g4 = st.columns(2)
+
+    with col_g3:
+        dm2 = df['Micro-Intención'].value_counts().reset_index()
+        dm2.columns = ['Micro-Intención', 'Cantidad']
+        fig = px.bar(dm2, x='Cantidad', y='Micro-Intención', orientation='h',
+                     title="3. Volumen por Micro-Intención", text_auto=True,
+                     color_discrete_sequence=['#9b59b6'])
+        fig.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Volumen", yaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_g4:
+        gb = df.groupby(['Micro-Intención', 'Sentimiento']).size().reset_index(name='Cantidad')
+        fig = px.bar(gb, x='Cantidad', y='Micro-Intención', color='Sentimiento', orientation='h',
+                     title="4. Intención vs Sentimiento", text_auto=True,
+                     color_discrete_map={'Positive':'#2ecc71', 'Neutral':'#95a5a6', 'Negative':'#e74c3c'})
+        fig.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="", yaxis_title="", barmode='stack')
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("### 📈 Evolución Temporal de la Frustración")
+
+    if 'date' not in df.columns:
+        hoy = pd.to_datetime('today')
+        df['date'] = [hoy - pd.Timedelta(days=int(d)) for d in np.random.randint(0, 30, size=len(df))]
+    if 'lang' not in df.columns:
+        df['lang'] = np.random.choice(['es', 'pt'], size=len(df))
+
+    df['Idioma'] = df['lang'].astype(str).str.lower().map({'es': 'Español', 'pt': 'Portugués', 'pt-br': 'Portugués'}).fillna('Otro')
+    df_daily = df.groupby(['date', 'Idioma']).size().reset_index(name='total')
+    df_neg = df[df['Sentimiento'] == 'Negative'].groupby(['date', 'Idioma']).size().reset_index(name='neg')
+    trend = pd.merge(df_daily, df_neg, on=['date', 'Idioma'], how='left').fillna(0)
+    trend['Frustración (%)'] = (trend['neg'] / trend['total']) * 100
+    trend = trend.sort_values('date')
+
+    fig = px.line(trend, x='date', y='Frustración (%)', color='Idioma',
+                  title="Evolución de Frustración Promedio (Últimos 30 días)",
+                  markers=True, color_discrete_map={'Español': '#3498db', 'Portugués': '#2ecc71'})
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("---")
+    col_ch1, col_ch2 = st.columns([1, 1.3])
+
+    with col_ch1:
+        st.markdown("### 🚨 Distribución de Riesgo")
+        fig = px.pie(df, names='Riesgo de Churn', color='Riesgo de Churn',
+                     color_discrete_map={'Alto Riesgo':'#c0392b', 'Riesgo Medio':'#f39c12', 'Riesgo Bajo':'#27ae60'},
+                     hole=0.4)
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col_ch2:
+        st.markdown("### 🚨 Alertas de Monitoreo")
+        micro = df['Micro-Intención'].astype(str).str.lower()
+
+        for label, key, emoji, msg_yes, msg_no in [
+            ("Queja", "complaint", "🔴", "Escalar a equipo de calidad — contactar al cliente en < 24h", "0 casos"),
+            ("Reembolso", ["get_refund", "payment_issue"], "🟠", "Agilizar proceso de reembolso — priorizar sobre otros tickets", "0 casos"),
+            ("Cancelación", "cancel_order", "🔴", "Revisar proceso de retención — ofrecer descuentos o beneficios", "0 casos"),
+        ]:
+            subset = df[micro.isin(key if isinstance(key, list) else [key])]
+            casos = len(subset)
+            churn_prom = subset['Churn_Num'].mean() if casos > 0 else 0.0
+            if casos > 0:
+                st.markdown(f"**{emoji} {label}** — {casos} casos (churn prom. {churn_prom:.2f})")
+                st.markdown(f"{emoji} **{msg_yes}**")
+            else:
+                st.markdown(f"**✅ {label}** — {msg_no}")
+            st.markdown("---")
+
+    st.markdown("---")
+    st.subheader("📋 Registro Detallado")
+    st.dataframe(df[['text', 'Sentimiento', 'Macro-Intención', 'Micro-Intención', 'Idioma', 'Riesgo de Churn']], use_container_width=True)
+
+
+# ==========================================
 # PESTAÑA 1: DASHBOARD EN VIVO
 # ==========================================
 with tab1:
     st.sidebar.header("Carga de Datos")
-    uploaded_file = st.sidebar.file_uploader("Sube tu archivo (Excel o CSV)", type=["csv", "xlsx"])
+    data_option = st.sidebar.radio("Origen:", ["📁 Demo (108 mensajes)", "📂 Subir archivo propio"],
+                                   index=0, key="data_source")
 
-    if uploaded_file is not None:
-        if uploaded_file.name.endswith('.csv'):
-            separador = st.sidebar.radio("Separador del CSV:", [",", ";"])
-            df = pd.read_csv(uploaded_file, encoding='utf-8-sig', sep=separador, on_bad_lines='skip')
-        else:
-            df = pd.read_excel(uploaded_file)
-            
-        df.columns = df.columns.astype(str).str.strip()
-        
-        if 'text' not in df.columns:
-            st.error("⚠️ El archivo debe tener una columna llamada 'text' en la primera fila.")
-        elif st.sidebar.button("Analizar Conversaciones 🚀"):
-            with st.spinner("Reparando textos y procesando redes neuronales..."):
-                
-                df = df.dropna(subset=['text']).copy()
-                
-                def reparar_texto(texto):
-                    try:
-                        return texto.encode('latin1').decode('utf-8')
-                    except:
-                        try:
-                            return texto.encode('cp1252').decode('utf-8', errors='ignore')
-                        except:
-                            return texto
-                
-                if uploaded_file.name.endswith('.csv'):
-                    df['text'] = df['text'].astype(str).apply(reparar_texto)
-                else:
-                    df['text'] = df['text'].astype(str)
-                    
-                df['text'] = df['text'].str.strip()
-                df = df[df['text'].str.len() > 0].copy()
-                
-                textos = df['text'].tolist()
-                
-                res_intent = []
-                res_sentiment = []
-                
-                for frase in textos:
-                    res_intent.append(intent_clf(frase)[0])
-                    res_sentiment.append(sentiment_clf(frase)[0])
-                
-                df['Micro-Intención'] = [INTENT_LABEL_MAP.get(res['label'], 'consulta_general') for res in res_intent]
-                df['Sentimiento'] = [res['label'].capitalize() for res in res_sentiment]
-                
-                # ========================================================
-                # MOTOR DE REGLAS AVANZADO (POST-PROCESAMIENTO)
-                # ========================================================
-                nuevas_intenciones = []
-                nuevos_sentimientos = []
-                
-                for index, row in df.iterrows():
-                    texto_min = str(row['text']).lower()
-                    intencion = row['Micro-Intención']
-                    sentimiento = row['Sentimiento']
-                    
-                    # 1. Regla Inteligente: Cambios de pedido
-                    es_modificacion = False
-                    if ('cambi' in texto_min or 'modific' in texto_min) and ('talla' in texto_min or 'color' in texto_min or 'pedido' in texto_min):
-                        es_modificacion = True
-                    # Captura explícita del patrón "pedí X pero necesito Y"
-                    elif 'pedí' in texto_min and 'necesito' in texto_min:
-                        es_modificacion = True
-                        
-                    # 2. Regla Inteligente: Eliminación de cuenta
-                    palabras_abandono = [
-                        'excluir', 'apagar minha conta', 'cancelar conta',
-                        'borrar mi cuenta', 'cancelar mi cuenta', 'eliminar',
-                        'elimino mi cuenta', 'cerrar mi cuenta', 'dar de baja', 'borrar cuenta'
-                    ]
-                    es_abandono = any(p in texto_min for p in palabras_abandono) and 'cuenta' in texto_min
-                    
-                    # Aplicamos validaciones (evitando sobreescribir cambio de dirección)
-                    if es_abandono:
-                        intencion = 'delete_account'
-                    elif es_modificacion and intencion != 'change_shipping_address':
-                        intencion = 'modify_order'
-                        if sentimiento == 'Negative':
-                            sentimiento = 'Neutral'
-                            
-                    nuevas_intenciones.append(intencion)
-                    nuevos_sentimientos.append(sentimiento)
-                    
-                df['Micro-Intención'] = nuevas_intenciones
-                df['Sentimiento'] = nuevos_sentimientos
-                
-                # Mapeamos a las Macro-Intenciones
-                df['Macro-Intención'] = df['Micro-Intención'].map(lambda x: MACRO_INTENT_MAP.get(x, 'Otras Consultas'))
-                
-                # --- LÓGICA DE NEGOCIO: RIESGO DE CHURN ---
-                def calcular_riesgo_churn(row):
-                    intenciones_criticas = ['cancel_order', 'complaint', 'get_refund', 'payment_issue', 'delete_account']
-                    
-                    if row['Micro-Intención'] == 'delete_account':
-                        return 'Alto Riesgo'
-                    elif row['Sentimiento'] == 'Negative' and row['Micro-Intención'] in intenciones_criticas:
-                        return 'Alto Riesgo'
-                    elif row['Sentimiento'] == 'Negative' or row['Micro-Intención'] == 'contact_customer_service':
-                        return 'Riesgo Medio'
-                    else:
-                        return 'Riesgo Bajo'
-                
-                df['Riesgo de Churn'] = df.apply(calcular_riesgo_churn, axis=1)
-                
-                churn_numeric_map = {'Alto Riesgo': 0.90, 'Riesgo Medio': 0.45, 'Riesgo Bajo': 0.10}
-                df['Churn_Num'] = df['Riesgo de Churn'].map(churn_numeric_map)
-                
-                st.session_state.df_processed = df
-
-            st.success("¡Análisis completado exitosamente!")
-            
-            # --- INDICADORES GENERALES ---
-            c1, c2, c3 = st.columns(3)
-            total_mensajes = len(df)
-            usuarios_frustrados = len(df[df['Sentimiento'] == 'Negative'])
-            tasa_frustracion = (usuarios_frustrados / total_mensajes) * 100 if total_mensajes > 0 else 0
-            
-            c1.metric("Total de Mensajes", total_mensajes)
-            c2.metric("Usuarios Frustrados", usuarios_frustrados)
-            c3.metric("Tasa de Frustración", f"{tasa_frustracion:.1f}%")
-            
-            # --- SECCIÓN VISUAL 1 ---
-            st.markdown("---")
-            st.markdown("### 📊 Distribución General")
-            col_g1, col_g2 = st.columns(2)
-            
-            with col_g1:
-                fig_pie = px.pie(df, names='Sentimiento', color='Sentimiento', 
-                             color_discrete_map={'Positive':'#2ecc71', 'Neutral':'#95a5a6', 'Negative':'#e74c3c'},
-                             title="1. Sentimientos de los Usuarios")
-                fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-                st.plotly_chart(fig_pie, use_container_width=True)
-                
-            with col_g2:
-                df_macro = df['Macro-Intención'].value_counts().reset_index()
-                df_macro.columns = ['Macro-Intención', 'Cantidad']
-                bar_macro = px.bar(df_macro, x='Cantidad', y='Macro-Intención',
-                                   orientation='h', title="2. Volumen por Macro-Intención",
-                                   text_auto=True, color_discrete_sequence=['#3498db'])
-                bar_macro.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Volumen", yaxis_title="")
-                st.plotly_chart(bar_macro, use_container_width=True)
-
-            # --- SECCIÓN VISUAL 2 ---
-            st.markdown("### 🎯 Análisis Detallado de Flujos")
-            col_g3, col_g4 = st.columns(2)
-
-            with col_g3:
-                df_micro = df['Micro-Intención'].value_counts().reset_index()
-                df_micro.columns = ['Micro-Intención', 'Cantidad']
-                bar_micro = px.bar(df_micro, x='Cantidad', y='Micro-Intención',
-                                   orientation='h', title="3. Volumen por Micro-Intención",
-                                   text_auto=True, color_discrete_sequence=['#9b59b6'])
-                bar_micro.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Volumen", yaxis_title="")
-                st.plotly_chart(bar_micro, use_container_width=True)
-
-            with col_g4:
-                intent_sent_df = df.groupby(['Micro-Intención', 'Sentimiento']).size().reset_index(name='Cantidad')
-                bar_stack = px.bar(intent_sent_df, x='Cantidad', y='Micro-Intención', color='Sentimiento',
-                             orientation='h', title="4. Desempeño de Flujos (Intención vs Sentimiento)",
-                             color_discrete_map={'Positive':'#2ecc71', 'Neutral':'#95a5a6', 'Negative':'#e74c3c'},
-                             text_auto=True)
-                bar_stack.update_layout(yaxis={'categoryorder':'total ascending'}, xaxis_title="Volumen", yaxis_title="", barmode='stack')
-                st.plotly_chart(bar_stack, use_container_width=True)
-            
-            # --- SECCIÓN VISUAL 3: ANÁLISIS TEMPORAL ---
-            st.markdown("---")
-            st.markdown("### 📈 Evolución Temporal de la Frustración")
-            
-            if 'date' not in df.columns:
-                hoy = pd.to_datetime('today')
-                fechas_random = [hoy - pd.Timedelta(days=int(d)) for d in np.random.randint(0, 30, size=len(df))]
-                df['date'] = fechas_random
-                df['date'] = df['date'].dt.date
-                
-            if 'lang' not in df.columns:
-                df['lang'] = np.random.choice(['es', 'pt'], size=len(df))
-                
-            df['Idioma'] = df['lang'].astype(str).str.lower().map({'es': 'Español', 'pt': 'Portugués', 'pt-br': 'Portugués'}).fillna('Otro')
-            
-            df_daily = df.groupby(['date', 'Idioma']).size().reset_index(name='total')
-            df_neg = df[df['Sentimiento'] == 'Negative'].groupby(['date', 'Idioma']).size().reset_index(name='negativos')
-            
-            df_trend = pd.merge(df_daily, df_neg, on=['date', 'Idioma'], how='left').fillna(0)
-            df_trend['Frustración (%)'] = (df_trend['negativos'] / df_trend['total']) * 100
-            df_trend = df_trend.sort_values('date')
-            
-            fig_trend = px.line(df_trend, x='date', y='Frustración (%)', color='Idioma',
-                                title="Evolución de Frustración Promedio (Últimos 30 días)",
-                                markers=True, color_discrete_map={'Español': '#3498db', 'Portugués': '#2ecc71'})
-            
-            fig_trend.update_xaxes(title="Fecha de la interacción")
-            fig_trend.update_yaxes(title="Tasa de Frustración (%)")
-            
-            st.plotly_chart(fig_trend, use_container_width=True)
-                    
-            # --- SECCIÓN: RIESGO DE CHURN ---
-            st.markdown("---")
-            col_ch1, col_ch2 = st.columns([1, 1.3])
-            
-            with col_ch1:
-                st.markdown("### 🚨 Distribución de Riesgo")
-                fig_churn = px.pie(df, names='Riesgo de Churn', color='Riesgo de Churn',
-                                   color_discrete_map={'Alto Riesgo':'#c0392b', 'Riesgo Medio':'#f39c12', 'Riesgo Bajo':'#27ae60'},
-                                   hole=0.4)
-                fig_churn.update_layout(margin=dict(t=30, b=0, l=0, r=0))
-                st.plotly_chart(fig_churn, use_container_width=True)
-                
-            with col_ch2:
-                st.markdown("### 🚨 Alertas de Monitoreo")
-                micro_intenciones = df['Micro-Intención'].astype(str).str.lower()
-                
-                df_queja = df[micro_intenciones == 'complaint']
-                casos_queja = len(df_queja)
-                churn_queja = df_queja['Churn_Num'].mean() if casos_queja > 0 else 0.0
-                
-                df_reembolso = df[micro_intenciones.isin(['get_refund', 'payment_issue'])]
-                casos_reembolso = len(df_reembolso)
-                churn_reembolso = df_reembolso['Churn_Num'].mean() if casos_reembolso > 0 else 0.0
-                
-                df_cancel = df[micro_intenciones == 'cancel_order']
-                casos_cancel = len(df_cancel)
-                churn_cancel = df_cancel['Churn_Num'].mean() if casos_cancel > 0 else 0.0
-                
-                if casos_queja > 0:
-                    st.markdown(f"**⚠️ Queja** — {casos_queja} casos (churn prom. {churn_queja:.2f})")
-                    st.markdown("🔴 **Escalar a equipo de calidad** — contactar al cliente en < 24h")
-                else:
-                    st.markdown("**✅ Queja** — 0 casos (Monitoreo en orden)")
-                st.markdown("---")
-                
-                if casos_reembolso > 0:
-                    st.markdown(f"**⚠️ Reembolso** — {casos_reembolso} casos (churn prom. {churn_reembolso:.2f})")
-                    st.markdown("🟠 **Agilizar proceso de reembolso** — priorizar sobre otros tickets")
-                else:
-                    st.markdown("**✅ Reembolso** — 0 casos (Monitoreo en orden)")
-                st.markdown("---")
-                
-                if casos_cancel > 0:
-                    st.markdown(f"**⚠️ Cancelación** — {casos_cancel} casos (churn prom. {churn_cancel:.2f})")
-                    st.markdown("🔴 **Revisar proceso de retención** — ofrecer descuentos o beneficios")
-                else:
-                    st.markdown("**✅ Cancelación** — 0 casos (Monitoreo en orden)")
-            
-            st.markdown("---")
-            st.subheader("📋 Registro Detallado")
-            st.dataframe(df[['text', 'Sentimiento', 'Macro-Intención', 'Micro-Intención', 'Idioma', 'Riesgo de Churn']], use_container_width=True)
+    if data_option == "📂 Subir archivo propio":
+        uploaded_file = st.sidebar.file_uploader("Sube tu archivo (Excel o CSV)", type=["csv", "xlsx"])
+        if uploaded_file is not None:
+            if uploaded_file.name.endswith('.csv'):
+                separador = st.sidebar.radio("Separador del CSV:", [",", ";"])
+                df = pd.read_csv(uploaded_file, encoding='utf-8-sig', sep=separador, on_bad_lines='skip')
+            else:
+                df = pd.read_excel(uploaded_file)
+            df.columns = df.columns.astype(str).str.strip()
+            if 'text' not in df.columns:
+                st.error("⚠️ El archivo debe tener una columna llamada 'text' en la primera fila.")
+            elif st.sidebar.button("Analizar Conversaciones 🚀"):
+                with st.spinner("Reparando textos y procesando redes neuronales..."):
+                    st.session_state.df_processed = procesar_dataframe(df, uploaded_file)
+                st.success("¡Análisis completado exitosamente!")
     else:
-        st.info("👆 Por favor, sube un archivo Excel (.xlsx) o CSV (.csv) en la barra lateral para comenzar.")
+        sample = load_sample_corpus()
+        if sample is not None:
+            if st.session_state.df_processed is None:
+                with st.spinner("Analizando dataset de demostración (108 mensajes)..."):
+                    st.session_state.df_processed = procesar_dataframe(sample)
+                st.success("✅ Dataset de demostración analizado automáticamente")
+        else:
+            st.sidebar.warning("⚠️ No se encontró el archivo corpus_demo_bilingue.csv")
+
+    if st.session_state.df_processed is not None:
+        mostrar_dashboard(st.session_state.df_processed)
+    else:
+        st.info("👆 Elegí una opción en la barra lateral para comenzar.")
 
 # ==========================================
 # PESTAÑA 2: MÉTRICAS DEL MODELO
